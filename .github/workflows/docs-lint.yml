@@ -7,10 +7,12 @@ on:
     paths:
     - "*.md"
     - "**/*.md"
+    - ".github/workflows/docs-lint.yml"
   pull_request:
     paths:
     - "*.md"
     - "**/*.md"
+    - ".github/workflows/docs-lint.yml"
 
 jobs:
   markdownlint:
@@ -23,14 +25,14 @@ jobs:
     - name: Run Markdown linter
       run: |
         gem install mdl
-        mdl **/*.md
+        mdl README.md CHANGELOG.md
   rubocop:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 3.1
     - name: Lint Markdown files with RuboCop
       run: |
         gem install bundler
@@ -45,7 +47,7 @@ jobs:
         sudo apt-get install hunspell
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 3.1
     - name: Cache installed gems
       uses: actions/cache@v1
       with:
@@ -54,7 +56,7 @@ jobs:
     - name: Install Forspell
       run: gem install forspell
     - name: Run Forspell
-      run: forspell **/*.md .github/**/*.md
+      run: forspell README.md CHANGELOG.md
   lychee:
     runs-on: ubuntu-latest
     steps:
