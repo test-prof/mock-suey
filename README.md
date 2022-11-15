@@ -2,6 +2,9 @@
 
 # Mock Suey
 
+<img align="right" height="168" width="120"
+     title="Mock Suey logo" src="./assets/logo.png">
+
 _Coming soon_
 
 Utilities to keep mocks in line with real objects.
