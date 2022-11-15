@@ -1,0 +1,3 @@
+bump:
+  file: lib/mock_suey/version.rb
+  skip_ci: true
