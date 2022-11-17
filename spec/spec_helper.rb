@@ -18,6 +18,12 @@ RSpec.configure do |config|
   config.filter_run :focus
   config.run_all_when_everything_filtered = true
 
+  config.define_derived_metadata(file_path: %r{/spec/cases/}) do |metadata|
+    metadata[:type] = :integration
+  end
+
+  config.include IntegrationHelpers, type: :integration
+
   config.order = :random
   Kernel.srand config.seed
 end

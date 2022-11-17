@@ -3,6 +3,8 @@
 source "https://rubygems.org"
 
 gem "debug", platform: :mri
+gem "rbs"
+gem "rspec"
 
 gemspec
 

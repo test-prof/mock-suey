@@ -1,0 +1,11 @@
+class TaxCalculator
+  class Result
+    attr_reader result: Float
+    attr_reader tax_rate: Float
+  end
+
+  def for_income: (Numeric val) -> Result
+  def tax_rate_for: (value: Numeric) -> Float
+
+  def self.tax_rate_for: (value: Numeric) -> Float
+end
