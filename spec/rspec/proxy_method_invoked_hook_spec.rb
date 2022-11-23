@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "mock_suey/rspec/proxy_method_invoked"
-
 describe "#proxy_method_invoked" do
   before(:all) do
     @mcalls = mcalls = []

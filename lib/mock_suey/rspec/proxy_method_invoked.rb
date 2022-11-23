@@ -7,23 +7,11 @@ rescue LoadError
   return
 end
 
+require "mock_suey/ext/rspec"
+
 module MockSuey
   module RSpec
-    # Provide unified interface to access target class
-    # for different double types
-    using(Module.new do
-      refine ::RSpec::Mocks::PartialDoubleProxy do
-        def target_class = object.class
-      end
-
-      refine ::RSpec::Mocks::PartialClassDoubleProxy do
-        def target_class = object.singleton_class
-      end
-
-      refine ::RSpec::Mocks::VerifyingProxy do
-        def target_class = @doubled_module.target
-      end
-    end)
+    using Ext::RSpec
 
     module ProxyMethodInvokedHook
       def proxy_method_invoked(obj, *args, &block)

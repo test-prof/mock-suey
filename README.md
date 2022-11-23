@@ -82,10 +82,76 @@ Typed doubles rely on the type signatures being defined. What if you don't have 
 
 ## Mock context
 
-### Tracing real method calls
+Mock context is a re-usable mocking/stubbing configuration. Keeping a _library of mocks_
+helps to keep fake objects under control. The idea is similar to data fixtures (and heavily inspired by the [fixturama][] gem).
+
+Technically, mock contexts are _shared contexts_ (in RSpec sense) that _know_ which objects and methods are being mocked at the boot time, not at the run time. We use this knowledge to collect calls made on _real_ objects (so we can use them for the mocked calls verification later).
+
+### Defining and including mock contexts
+
+The API is similar to shared contexts:
+
+```ruby
+# Define a context
+RSpec.mock_context "Anyway::Env" do
+  let(:testo_env) do
+    {
+      "a" => "x",
+      "data" => {
+        "key" => "value"
+      }
+    }
+  end
+
+  before do
+    env_double = instance_double("Anyway::Env")
+    allow(::Anyway::Env).to receive(:new).and_return(env_double)
+
+    allow(env_double).to receive(:fetch).with("UNKNOWN", any_args).and_return(Anyway::Env::Parsed.new({}, nil))
+    allow(env_double).to receive(:fetch).with("TESTO", any_args).and_return(Anyway::Env::Parsed.new(testo_env, nil))
+    allow(env_double).to receive(:fetch).with("", any_args).and_return(nil)
+  end
+end
+
+# Include in a test file
+describe Anyway::Loaders::Env do
+  include_mock_context "Anyway::Env"
+
+  # ...
+end
+```
+
+It's recommended to keep mock contexts under `spec/mocks` or `spec/fixtures/mocks` and load them in the RSpec configuration file:
+
+```ruby
+Dir["#{__dir__}/mocks/**/*.rb"].sort.each { |f| require f }
+```
+
+### Accessing mocked objects information
+
+You can get the registry of mocked objects and methods after all tests were loaded,
+for example, in the `before(:suite)` hook:
+
+```ruby
+RSpec.configure do |config|
+  config.before(:suite) do
+    MockSuey::RSpec::MockContext.registry.each do |klass, methods|
+      methods.each do |method_name, stub_calls|
+        # Stub calls is a method call object,
+        # containing the information about the stubbed call:
+        # - receiver_class == klass
+        # - method_name == method_name
+        # - arguments: expected arguments (empty if expects no arguments)
+        # - return_value: stubbed return value
+      end
+    end
+  end
+end
+```
+
+## Tracing real method calls
 
 ## Auto-generated type signatures and post-run checks
-
 
 ## Tracking stubbed method calls
 

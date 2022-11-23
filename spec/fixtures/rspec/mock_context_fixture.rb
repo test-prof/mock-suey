@@ -6,7 +6,7 @@ require_relative "./spec_helper"
 require_relative "../shared/tax_calculator"
 require_relative "tax_calculator_spec"
 
-shared_context "TaxCalculator" do
+mock_context "TaxCalculator" do
   let(:tax_calculator) { instance_double("TaxCalculator") }
 
   before do
@@ -19,6 +19,6 @@ shared_context "TaxCalculator" do
 end
 
 describe Accountant do
-  include_context "TaxCalculator"
+  include_mock_context "TaxCalculator"
   include_examples "accountant"
 end

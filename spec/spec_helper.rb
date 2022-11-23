@@ -11,6 +11,9 @@ require "mock-suey"
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].sort.each { |f| require f }
 
+# Preload fixture classes
+Dir["#{File.dirname(__FILE__)}/fixtures/shared/**/*.rb"].sort.each { |f| require f }
+
 RSpec.configure do |config|
   config.mock_with :rspec
 
