@@ -350,7 +350,7 @@ I'm interested in the following contributions/discussions:
 - Minitest support
 - Advanced mock contracts (custom rules, custom classes support, etc.)
 - Methods delegation (e.g., `.perform_asyn -> #perform`)
-- Exceptions support in contracts verifications
+- Exceptions support in contracts verification
 
 ## Contributing
 
