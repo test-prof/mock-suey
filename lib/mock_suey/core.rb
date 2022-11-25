@@ -7,6 +7,9 @@ module MockSuey
     TYPE_CHECKERS = %w[ruby]
 
     attr_accessor :debug,
+      :logger,
+      :log_level,
+      :color,
       :store_mocked_calls,
       :signature_load_dirs,
       :raise_on_missing_types,
@@ -14,11 +17,12 @@ module MockSuey
       :trace_real_calls,
       :trace_real_calls_via
 
-    attr_writer :logger
     attr_reader :type_check, :auto_type_check, :verify_mock_contracts
 
     def initialize
       @debug = %w[1 y yes true t].include?(ENV["MOCK_SUEY_DEBUG"])
+      @log_level = debug ? :debug : :info
+      @color = nil
       @store_mocked_calls = false
       @type_check = nil
       @signature_load_dirs = ["sig"]
@@ -29,8 +33,16 @@ module MockSuey
       @trace_real_calls_via = :prepend
     end
 
-    def logger
-      @logger || Logger.new(debug ? $stdout : IO::NULL)
+    def color?
+      return color unless color.nil?
+
+      logdev = logger.instance_variable_get(:@logdev)
+      return self.color = false unless logdev
+
+      output = logdev.instance_variable_get(:@dev)
+      return self.color = false unless output
+
+      self.color = output.is_a?(IO) && output.tty?
     end
 
     def type_check=(val)
@@ -89,6 +101,7 @@ module MockSuey
 
     # Load extensions and start tracing if required
     def cook
+      setup_logger
       setup_type_checker
       setup_mocked_calls_collection if config.store_mocked_calls
       setup_real_calls_collection if config.trace_real_calls
@@ -99,6 +112,14 @@ module MockSuey
       @stored_real_calls = tracer.stop if config.trace_real_calls
 
       offenses = []
+
+      if config.store_mocked_calls
+        logger.debug { "Stored mocked calls:\n#{stored_mocked_calls.map { "  #{_1.inspect}" }.join("\n")}" }
+      end
+
+      if config.trace_real_calls
+        logger.debug { "Traced real calls:\n#{stored_real_calls.map { "  #{_1.inspect}" }.join("\n")}" }
+      end
 
       if config.auto_type_check
         perform_auto_type_check(offenses)
@@ -113,6 +134,14 @@ module MockSuey
 
     private
 
+    def setup_logger
+      if !config.logger || config.debug
+        config.logger = Logger.new($stdout)
+        config.logger.formatter = Logging::Formatter.new
+      end
+      config.logger.level = config.log_level
+    end
+
     def setup_type_checker
       return unless config.type_check
 
@@ -124,7 +153,7 @@ module MockSuey
         self.type_checker = MockSuey::TypeChecks.const_get(const_name)
           .new(load_dirs: config.signature_load_dirs)
 
-        logger.debug "Set up type checker: #{type_checker.class.name} (load_dirs: #{config.signature_load_dirs})"
+        logger.info "Set up type checker: #{type_checker.class.name} (load_dirs: #{config.signature_load_dirs})"
       end
 
       raise_on_missing = config.raise_on_missing_types
@@ -135,7 +164,7 @@ module MockSuey
     end
 
     def setup_mocked_calls_collection
-      logger.debug "Collect mocked calls (MockSuey.stored_mocked_calls)"
+      logger.info "Collect mocked calls (MockSuey.stored_mocked_calls)"
 
       @stored_mocked_calls = []
 
@@ -143,11 +172,12 @@ module MockSuey
     end
 
     def setup_real_calls_collection
-      logger.debug "Collect real calls via #{config.trace_real_calls_via} (MockSuey.stored_real_calls)"
+      logger.info "Collect real calls via #{config.trace_real_calls_via} (MockSuey.stored_real_calls)"
 
       @tracer = Tracer.new(via: config.trace_real_calls_via)
 
       MockSuey::RSpec::MockContext.registry.each do |klass, methods|
+        logger.debug { "Trace #{klass} methods: #{methods.keys.join(", ")}" }
         tracer.collect(klass, methods.keys)
       end
 
@@ -160,7 +190,9 @@ module MockSuey
       # Generate signatures
       type_checker.load_signatures_from_calls(stored_real_calls)
 
-      logger.info "Type check mocked calls against auto-generated signatures"
+      logger.info "Type-checking mocked calls against auto-generated signatures..."
+
+      was_offenses = offenses.size
 
       # Verify stored mocked calls
       raise_on_missing = config.raise_on_missing_auto_types
@@ -171,22 +203,43 @@ module MockSuey
         call_obj.metadata[:error] = err
         offenses << call_obj
       end
+
+      failed_count = offenses.size - was_offenses
+      failed = failed_count > 0
+
+      if failed
+        logger.error "❌ Type-checking completed. Failed examples: #{failed_count}"
+      else
+        logger.info "✅ Type-checking completed. All good"
+      end
     end
 
     def perform_contracts_verification(offenses)
-      logger.info "Verify mock contracts"
+      logger.info "Verifying mock contracts..."
       real_calls_per_class_method = stored_real_calls.group_by(&:receiver_class).tap do |grouped|
         grouped.transform_values! { _1.group_by(&:method_name) }
       end
 
+      was_offenses = offenses.size
+
       MockSuey::RSpec::MockContext.registry.each do |klass, methods|
         methods.values.flatten.each do |stub_call|
           contract = MockContract.from_stub(stub_call)
+          logger.debug { "Generated contract:\n  #{contract.inspect}\n    (from stub: #{stub_call.inspect})" }
           contract.verify!(real_calls_per_class_method.dig(klass, stub_call.method_name))
         rescue MockContract::Error => err
           stub_call.metadata[:error] = err
           offenses << stub_call
         end
+      end
+
+      failed_count = offenses.size - was_offenses
+      failed = failed_count > 0
+
+      if failed
+        logger.error "❌ Verifying mock contracts completed. Failed contracts: #{failed_count}"
+      else
+        logger.info "✅ Verifying mock contracts completed. All good"
       end
     end
   end

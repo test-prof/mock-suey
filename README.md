@@ -335,8 +335,11 @@ Additional configuration options could be set:
 ```ruby
 MockSuey.configure do |config|
   # A logger instance
-  config.logger = Logger.new(IO::NULL)
-  # Debug mode is a shortcut to setup an STDOUT logger
+  config.logger = Logger.new($stdout)
+  # You can also specify log level and whether to colorize logs
+  # config.log_level = :info
+  # config.color = ? # Depends on the logging device
+  # Debug mode is a shortcut to setup an STDOUT logger with the debug level
   config.debug = ENV["MOCK_SUEY_DEBUG"] == "true" # or 1, y, yes, or t
 end
 ```

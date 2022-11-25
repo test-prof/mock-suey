@@ -8,6 +8,7 @@ require "ruby-next/language/setup"
 RubyNext::Language.setup_gem_load_path(transpile: true)
 
 require "mock_suey/version"
+require "mock_suey/logging"
 require "mock_suey/core"
 require "mock_suey/method_call"
 require "mock_suey/type_checks"

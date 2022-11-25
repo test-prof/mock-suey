@@ -55,6 +55,10 @@ module MockSuey
       "#{receiver_class.instance_class_name}#{delimeter}#{method_name}"
     end
 
+    def inspect
+      "#{method_desc}(#{arguments.map(&:inspect).join(", ")}) -> #{return_value.inspect}"
+    end
+
     private
 
     def keyword_parameters

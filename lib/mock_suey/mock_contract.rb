@@ -43,7 +43,7 @@ module MockSuey
         super(
           contract,
           "Mock contract verification failed:\n" \
-          "  No matching calls captured for #{contract.pattern_desc}.\n" \
+          "  No matching calls captured for #{contract.inspect}.\n" \
           "  Captured call patterns:\n" \
           "#{captured_calls_message(real_calls)}"
         )
@@ -56,7 +56,7 @@ module MockSuey
         super(
           contract,
           "Mock contract verification failed:\n" \
-          "  No calls with the expected return type captured for #{contract.pattern_desc}.\n" \
+          "  No calls with the expected return type captured for #{contract.inspect}.\n" \
           "  Captured call patterns:\n" \
           "#{captured_calls_message(real_calls)}"
         )
@@ -122,7 +122,7 @@ module MockSuey
       "#{receiver_class.instance_class_name}#{delimeter}#{method_name}"
     end
 
-    def pattern_desc
+    def inspect
       args_pattern.map do
         (_1 == ANYTHING) ? "_" : _1.inspect
       end.join(", ").then do |args_desc|
