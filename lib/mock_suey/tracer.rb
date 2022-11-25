@@ -25,9 +25,9 @@ module MockSuey
                   __mock_suey_tracer__ << MethodCall.new(
                     receiver_class: self.class,
                     method_name: __method__,
-                    arguments:,
+                    arguments: arguments,
                     has_kwargs: !kwargs.empty?,
-                    return_value:,
+                    return_value: return_value,
                     metadata: {
                       location: method(__method__).super_method.source_location.first
                     }

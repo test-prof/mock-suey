@@ -121,7 +121,7 @@ end
 RSpec.extend(MockSuey::RSpec::MockContext::DSL)
 
 if RSpec.configuration.expose_dsl_globally?
-  Kernel.include(MockSuey::RSpec::MockContext::DSL)
+  Object.include(MockSuey::RSpec::MockContext::DSL)
   Module.extend(MockSuey::RSpec::MockContext::DSL)
 end
 

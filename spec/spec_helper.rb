@@ -5,7 +5,13 @@ begin
 rescue LoadError
 end
 
-require "ruby-next/language/runtime" unless ENV["CI"] == "true"
+require "ruby-next/language/runtime"
+
+if ENV["CI"] == "true"
+  # Only transpile specs, source code MUST be loaded from pre-transpiled files
+  RubyNext::Language.watch_dirs.clear
+  RubyNext::Language.watch_dirs << __dir__
+end
 
 require "mock-suey"
 
