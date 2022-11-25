@@ -82,7 +82,7 @@ module MockSuey
 
     def self.contractable_arg?(val)
       case val
-      when TrueClass, FalseClass, Numeric, NilClass
+      when TrueClass, FalseClass, Numeric, String, Regexp, NilClass
         true
       when Array
         val.all? { |v| contractable_arg?(v) }
@@ -104,6 +104,8 @@ module MockSuey
     end
 
     def verify!(calls)
+      return if noop?
+
       raise NoMethodCalls.new(self) if calls.nil? || calls.empty?
 
       matching_input_calls = calls.select { matching_args?(_1) }
@@ -115,6 +117,8 @@ module MockSuey
 
       raise NoMatchingReturnType.new(self, matching_input_calls)
     end
+
+    def noop? = args_pattern.all? { _1 == ANYTHING }
 
     def method_desc
       delimeter = receiver_class.singleton_class? ? "." : "#"

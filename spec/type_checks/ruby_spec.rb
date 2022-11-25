@@ -55,6 +55,19 @@ describe MockSuey::TypeChecks::Ruby do
       )
     end
 
+    it "type-checks with instance double" do
+      mcall = MockSuey::MethodCall.new(
+        receiver_class: TaxCalculator,
+        method_name: :for_income,
+        arguments: [120],
+        return_value: instance_double("TaxCalculator::Result")
+      )
+
+      expect do
+        checker.typecheck!(mcall)
+      end.not_to raise_error
+    end
+
     it "type-checks custom singleton classes" do
       mcall = MockSuey::MethodCall.new(
         receiver_class: TaxCalculator.singleton_class,
@@ -67,6 +80,62 @@ describe MockSuey::TypeChecks::Ruby do
         checker.typecheck!(mcall)
       end.to raise_error(
         RBS::Test::Tester::TypeError, /ArgumentError: expected method type \(value: ::Numeric\)/
+      )
+    end
+
+    it "type-checks #initialize" do
+      mcall = MockSuey::MethodCall.new(
+        receiver_class: Accountant,
+        method_name: :initialize,
+        arguments: [TaxCalculator.new],
+        return_value: nil
+      )
+
+      expect do
+        checker.typecheck!(mcall)
+      end.to raise_error(
+        RBS::Test::Tester::TypeError, /ArgumentError: expected method type \(\?tax_calculator: ::TaxCalculator\)/
+      )
+    end
+
+    it "type-checks #initialize with double return" do
+      mcall = MockSuey::MethodCall.new(
+        receiver_class: Accountant,
+        method_name: :initialize,
+        arguments: [{tax_calculator: TaxCalculator.new}],
+        return_value: double("accountant")
+      )
+
+      expect do
+        checker.typecheck!(mcall)
+      end.not_to raise_error
+    end
+
+    it "type-checks #initialize with instance double return for correct class" do
+      mcall = MockSuey::MethodCall.new(
+        receiver_class: Accountant,
+        method_name: :initialize,
+        arguments: [{tax_calculator: TaxCalculator.new}],
+        return_value: instance_double("Accountant")
+      )
+
+      expect do
+        checker.typecheck!(mcall)
+      end.not_to raise_error
+    end
+
+    it "type-checks #initialize with incorrect instance_double return" do
+      mcall = MockSuey::MethodCall.new(
+        receiver_class: Accountant,
+        method_name: :initialize,
+        arguments: [{tax_calculator: TaxCalculator.new}],
+        return_value: instance_double("TaxCalculator")
+      )
+
+      expect do
+        checker.typecheck!(mcall)
+      end.to raise_error(
+        RBS::Test::Tester::TypeError, /ReturnTypeError: expected `self`/
       )
     end
   end
@@ -143,7 +212,8 @@ describe MockSuey::TypeChecks::Ruby do
       kwargs_new_call = MockSuey::MethodCall.new(
         receiver_class: Accountant,
         method_name: :initialize,
-        arguments: [{tax_calculator: TaxCalculator.new}]
+        arguments: [{tax_calculator: TaxCalculator.new}],
+        return_value: instance_double(Accountant)
       )
 
       expect do

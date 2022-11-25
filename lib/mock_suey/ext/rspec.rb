@@ -13,7 +13,15 @@ module MockSuey
         def target_class = object.class
       end
 
+      refine ::RSpec::Mocks::VerifyingPartialDoubleProxy do
+        def target_class = object.class
+      end
+
       refine ::RSpec::Mocks::PartialClassDoubleProxy do
+        def target_class = object.singleton_class
+      end
+
+      refine ::RSpec::Mocks::VerifyingPartialClassDoubleProxy do
         def target_class = object.singleton_class
       end
 

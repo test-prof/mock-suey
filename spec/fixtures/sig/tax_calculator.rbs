@@ -9,3 +9,7 @@ class TaxCalculator
 
   def self.tax_rate_for: (value: Numeric) -> Float
 end
+
+class Accountant
+  def initialize: (?tax_calculator: TaxCalculator) -> self
+end

@@ -14,12 +14,15 @@ describe MockSuey::MockContract do
   end
 
   describe ".from_stub" do
+    let(:arguments) { [2020] }
+    let(:return_value) { 202 }
+
     let(:stub_call) do
       MockSuey::MethodCall.new(
         receiver_class: TaxCalculator,
         method_name: :for_income,
-        arguments: [2020],
-        return_value: 202
+        arguments:,
+        return_value:
       )
     end
 
@@ -32,6 +35,22 @@ describe MockSuey::MockContract do
         args_pattern: [2020],
         return_type: Integer
       )
+    end
+
+    context "with contractable and any args" do
+      let(:arguments) { ["2020", any_args] }
+
+      specify do
+        contract = described_class.from_stub(stub_call)
+
+        expect(contract).to have_attributes(
+          receiver_class: TaxCalculator,
+          method_name: :for_income,
+          args_pattern: ["2020", described_class::ANYTHING],
+          return_type: Integer
+        )
+        expect(contract).not_to be_noop
+      end
     end
 
     context "with non-contractable arguments" do
@@ -52,6 +71,7 @@ describe MockSuey::MockContract do
           args_pattern: [described_class::ANYTHING],
           return_type: NilClass
         )
+        expect(contract).to be_noop
       end
     end
   end

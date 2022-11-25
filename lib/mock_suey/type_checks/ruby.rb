@@ -94,7 +94,7 @@ module MockSuey
 
         def return_sig(name, values)
           # Special case
-          return "void" if name == :initialize
+          return "self" if name == :initialize
 
           values.map(&:class).uniq.map do
             constants << _1
@@ -224,15 +224,23 @@ module MockSuey
       end
 
       def reject_returned_doubles!(errors)
-        return unless defined?(RSpec::Core)
+        return unless defined?(::RSpec::Core)
 
         errors.reject! do |error|
           case error
           in RBS::Test::Errors::ReturnTypeError[
             type:,
-            value: RSpec::Mocks::InstanceVerifyingDouble => double
+            value: ::RSpec::Mocks::InstanceVerifyingDouble => double
           ]
-            double.instance_variable_get(:@doubled_module).target.to_s == type.name.to_s.gsub(/^::/, "")
+            return_class = type.instance_of?(RBS::Types::Bases::Self) ? error.klass : type.name
+            return_type = return_class.to_s.gsub(/^::/, "")
+            double_type = double.instance_variable_get(:@doubled_module).target.to_s
+
+            double_type == return_type
+          in RBS::Test::Errors::ReturnTypeError[
+            value: ::RSpec::Mocks::Double
+          ]
+            true
           else
             false
           end
