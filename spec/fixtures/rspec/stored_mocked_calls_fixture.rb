@@ -7,7 +7,7 @@ require_relative "../shared/tax_calculator"
 
 RSpec.configure do |config|
   config.after(:suite) do
-    puts "Stored mocks: #{MockSuey.store_mocked_calls.size}"
+    puts "Stored mocks: #{MockSuey.stored_mocked_calls.size}"
   end
 end
 

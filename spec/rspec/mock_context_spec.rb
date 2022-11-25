@@ -34,12 +34,12 @@ describe ".mock_context" do
   end
 
   specify "registry" do
-    expect(mocks.keys).to match_array([Hash, Array, Regexp.singleton_class, TaxCalculator.singleton_class])
+    expect(mocks.keys).to match_array([Hash, Array, Regexp.singleton_class, TaxCalculator])
 
     expect(mocks[Hash].keys).to match_array(%i[key?])
     expect(mocks[Array].keys).to match_array(%i[take size])
     expect(mocks[Regexp.singleton_class].keys).to match_array(%i[escape])
-    expect(mocks[TaxCalculator.singleton_class].keys).to match_array(%i[new])
+    expect(mocks[TaxCalculator].keys).to match_array(%i[initialize])
 
     expect(mocks[Hash][:key?].size).to eq(2)
     expect(mocks[Hash][:key?].map(&:arguments)).to match_array([
@@ -69,8 +69,8 @@ describe ".mock_context" do
       return_value: "bar"
     )
 
-    expect(mocks[TaxCalculator.singleton_class][:new].size).to eq(1)
-    expect(mocks[TaxCalculator.singleton_class][:new].first).to have_attributes(
+    expect(mocks[TaxCalculator][:initialize].size).to eq(1)
+    expect(mocks[TaxCalculator][:initialize].first).to have_attributes(
       arguments: [any_args],
       return_value: instance_of(::RSpec::Mocks::Double)
     )

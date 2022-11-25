@@ -27,14 +27,14 @@ describe "#proxy_method_invoked" do
   end
 
   it "#instance_double with string" do
-    target = instance_double("Hash")
+    target = instance_double("TestHash")
 
     allow(target).to receive(:key?).and_return(true)
     expect(target.key?("x")).to eq(true)
 
     expect(mcalls.size).to eq(1)
     expect(mcalls.first).to have_attributes(
-      receiver_class: Hash,
+      receiver_class: TestHash,
       method_name: :key?,
       arguments: ["x"],
       return_value: true
@@ -42,14 +42,14 @@ describe "#proxy_method_invoked" do
   end
 
   it "#instance_double with module" do
-    target = instance_double(Hash)
+    target = instance_double(TestHash)
 
     allow(target).to receive(:key?).and_return(true)
     expect(target.key?("x")).to eq(true)
 
     expect(mcalls.size).to eq(1)
     expect(mcalls.first).to have_attributes(
-      receiver_class: Hash,
+      receiver_class: TestHash,
       method_name: :key?,
       arguments: ["x"],
       return_value: true
@@ -87,12 +87,12 @@ describe "#proxy_method_invoked" do
   end
 
   it "allow(module).to" do
-    allow(Regexp).to receive(:escape).and_return("bar")
-    expect(Regexp.escape("foo")).to eq("bar")
+    allow(TestRegexp).to receive(:escape).and_return("bar")
+    expect(TestRegexp.escape("foo")).to eq("bar")
 
     expect(mcalls.size).to eq(1)
     expect(mcalls.first).to have_attributes(
-      receiver_class: Regexp.singleton_class,
+      receiver_class: TestRegexp.singleton_class,
       method_name: :escape,
       arguments: ["foo"],
       return_value: "bar"
@@ -100,21 +100,21 @@ describe "#proxy_method_invoked" do
   end
 
   it "allow(module).to receive(:new)" do
-    hash_double = instance_double("Hash")
+    hash_double = instance_double("TestHash")
     allow(hash_double).to receive(:[]).and_return(10)
-    allow(Hash).to receive(:new).and_return(hash_double)
+    allow(TestHash).to receive(:new).and_return(hash_double)
 
-    expect(Hash.new["a"]).to eq(10) # rubocop:disable Style/EmptyLiteral
+    expect(TestHash.new["a"]).to eq(10)
 
     expect(mcalls.size).to eq(2)
 
     expect(mcalls.first).to have_attributes(
-      receiver_class: Hash.singleton_class,
-      method_name: :new,
+      receiver_class: TestHash,
+      method_name: :initialize,
       arguments: []
     )
     expect(mcalls.last).to have_attributes(
-      receiver_class: Hash,
+      receiver_class: TestHash,
       method_name: :[],
       arguments: ["a"],
       return_value: 10

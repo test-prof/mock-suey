@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "mock_suey/ext/rspec"
+require "mock_suey/ext/instance_class"
 
 module MockSuey
   module RSpec
@@ -21,6 +22,7 @@ module MockSuey
 
       class MocksCollector
         using Ext::RSpec
+        using Ext::InstanceClass
 
         # Registry contains all identified mocks/stubs in a form:
         #   Hash[Class: Hash[Symbol method_name, Array[MethodCall]]
@@ -65,6 +67,11 @@ module MockSuey
 
                   # Simple doubles don't have targets
                   next unless receiver_class
+
+                  # TODO: Make conversion customizable (see proxy_method_invoked)
+                  if method_name == :new && receiver_class.singleton_class?
+                    receiver_class, method_name = receiver_class.instance_class, :initialize
+                  end
 
                   expected_calls = store[receiver_class][method_name] = []
 

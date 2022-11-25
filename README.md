@@ -16,10 +16,12 @@ A collection of tools to keep mocks in line with real objects.
   - [Using with RBS](#using-with-rbs)
   - [Typed doubles limitations](#typed-doubles-limitations)
 - [Mock context](#mock-context)
-  - [Tracing real method calls](#tracing-real-method-calls)
 - [Auto-generated type signatures and post-run checks](#auto-generated-type-signatures-and-post-run-checks)
+- [Mock contracts verification](#mock-contracts-verification)
 - [Tracking stubbed method calls](#tracking-stubbed-method-calls)
+- [Tracking real method calls](#tracking-real-method-calls)
 - [Configuration](#configuration)
+- [Future development](#future-development)
 
 ## Installation
 
@@ -149,9 +151,40 @@ RSpec.configure do |config|
 end
 ```
 
-## Tracing real method calls
-
 ## Auto-generated type signatures and post-run checks
+
+We can combine typed doubles and mock contexts to provide type-checking capabilities to codebase not using type signatures. For that, we can generate type signatures automatically by tracing _real_ object calls.
+
+You must opt-in to use this feature:
+
+```ruby
+MockSuey.configure do |config|
+  # Make sure type checker is configured
+  config.type_check = :ruby
+  config.auto_type_check = true
+  # Choose the real objects tracing method
+  config.trace_real_calls_via = :prepend # or :trace_point
+  # Whether to raise if type is missing in a post-check
+  # (i.e., hasn't been generated)
+  config.raise_on_missing_auto_types = true
+end
+```
+
+Under the hood, we use the [Tracking real method calls](#tracking-real-method-calls) feature described below.
+
+**IMPORTANT**: Only objects declared within mock contexts could be type-checked.
+
+### Limitations
+
+Currently, this feature only works if both real objects and mock objects calls are made during the same test run. Thus, tests could fail when running tests in parallel.
+
+## Mock contracts verification
+
+TBD
+
+### Limitations
+
+Similarly to auto-type checks, this feature does not yet support parallel tests execution.
 
 ## Tracking stubbed method calls
 
@@ -189,9 +222,50 @@ RSpec.configure do |config|
 end
 ```
 
+## Tracking real method calls
+
+This gem provides a method call tracking functionality for non-double objects.
+You can use it separately (not as a part of auto-type-checking or contract verification features). For example:
+
+```ruby
+RSpec.configure do |config|
+  tracer = MockSuey::Tracer.new(via: :trace_point) # or via: :prepend
+
+  config.before(:suite) do
+    tracer.collect(SomeClass, %i[some_method another_method])
+    tracer.start!
+  end
+
+  config.after(:suite) do
+    calls = traces.stop
+    # where call is a call object
+    # similar to a mocked call object described above
+  end
+end
+```
+
 ## Configuration
 
+Additional configuration options could be set:
+
+```ruby
+MockSuey.configure do |config|
+  # A logger instance
+  config.logger = Logger.new(IO::NULL)
+  # Debug mode is a shortcut to setup an STDOUT logger
+  config.debug = ENV["MOCK_SUEY_DEBUG"] == "true" # or 1, y, yes, or t
+end
+```
+
 ## Future development
+
+I'm interested in the following contributions/discussions:
+
+- Figure out parallel builds
+- Sorbet support
+- Minitest support
+- Advanced mock contracts (custom rules, custom classes support, etc.)
+- Methods delegation (e.g., `.perform_asyn -> #perform`)
 
 ## Contributing
 

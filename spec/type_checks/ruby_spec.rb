@@ -70,4 +70,85 @@ describe MockSuey::TypeChecks::Ruby do
       )
     end
   end
+
+  describe "#load_signatures_from_calls" do
+    it "generates signatures from calls and load them into env", :aggregate_failures do
+      calls = [
+        MockSuey::MethodCall.new(
+          receiver_class: TaxCalculator,
+          method_name: :for_income,
+          arguments: [120],
+          return_value: 87
+        ),
+        MockSuey::MethodCall.new(
+          receiver_class: TaxCalculator,
+          method_name: :for_income,
+          arguments: [0],
+          return_value: nil
+        ),
+        MockSuey::MethodCall.new(
+          receiver_class: TaxCalculator.singleton_class,
+          method_name: :tax_rate_for,
+          arguments: [120],
+          return_value: {rate: 10.0, value: 12.0}
+        ),
+        MockSuey::MethodCall.new(
+          receiver_class: Accountant,
+          method_name: :initialize,
+          arguments: [{tax_calculator: TaxCalculator.new}]
+        )
+      ]
+
+      checker.load_signatures_from_calls(calls)
+
+      invalid_arg_call = MockSuey::MethodCall.new(
+        receiver_class: TaxCalculator,
+        method_name: :for_income,
+        arguments: [{value: 125}],
+        return_value: 87
+      )
+
+      expect do
+        checker.typecheck!(invalid_arg_call)
+      end.to raise_error(
+        RBS::Test::Tester::TypeError, /ArgumentTypeError: expected `::Integer`/
+      )
+
+      invalid_return_call = MockSuey::MethodCall.new(
+        receiver_class: TaxCalculator,
+        method_name: :for_income,
+        arguments: [125],
+        return_value: "13%"
+      )
+
+      expect do
+        checker.typecheck!(invalid_return_call)
+      end.to raise_error(
+        RBS::Test::Tester::TypeError, /ReturnTypeError: expected `::Integer | ::NilClass`/
+      )
+
+      invalid_singleton_call = MockSuey::MethodCall.new(
+        receiver_class: TaxCalculator.singleton_class,
+        method_name: :tax_rate_for,
+        arguments: [125],
+        return_value: "13%"
+      )
+
+      expect do
+        checker.typecheck!(invalid_singleton_call)
+      end.to raise_error(
+        RBS::Test::Tester::TypeError, /ReturnTypeError: expected `::Hash`/
+      )
+
+      kwargs_new_call = MockSuey::MethodCall.new(
+        receiver_class: Accountant,
+        method_name: :initialize,
+        arguments: [{tax_calculator: TaxCalculator.new}]
+      )
+
+      expect do
+        checker.typecheck!(kwargs_new_call)
+      end.not_to raise_error
+    end
+  end
 end

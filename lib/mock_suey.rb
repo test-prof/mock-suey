@@ -5,6 +5,7 @@ require "logger"
 require "mock_suey/version"
 require "mock_suey/method_call"
 require "mock_suey/type_checks"
+require "mock_suey/tracer"
 
 module MockSuey
   class Configuration
@@ -14,12 +15,14 @@ module MockSuey
 
     attr_accessor :debug,
       :store_mocked_calls,
-      :type_checker,
       :signature_load_dirs,
-      :raise_on_missing_types
+      :raise_on_missing_types,
+      :raise_on_missing_auto_types,
+      :trace_real_calls,
+      :trace_real_calls_via
 
     attr_writer :logger
-    attr_reader :type_check
+    attr_reader :type_check, :auto_type_check
 
     def initialize
       @debug = %w[1 y yes true t].include?(ENV["MOCK_SUEY_DEBUG"])
@@ -27,6 +30,10 @@ module MockSuey
       @type_check = nil
       @signature_load_dirs = ["sig"]
       @raise_on_missing_types = false
+      @raise_on_missing_auto_types = true
+      @trace_real_calls = false
+      @auto_type_check = false
+      @trace_real_calls_via = :prepend
     end
 
     def logger
@@ -44,10 +51,21 @@ module MockSuey
 
       @type_check = val
     end
+
+    def auto_type_check=(val)
+      if val
+        @trace_real_calls = true
+        @store_mocked_calls = true
+        @auto_type_check = true
+      else
+        @auto_type_check = val
+      end
+    end
   end
 
   class << self
-    attr_reader :store_mocked_calls
+    attr_reader :stored_mocked_calls, :tracer, :stored_real_calls
+    attr_accessor :type_checker
 
     def config = @config ||= Configuration.new
 
@@ -71,10 +89,20 @@ module MockSuey
     def cook
       setup_type_checker
       setup_mocked_calls_collection if config.store_mocked_calls
+      setup_real_calls_collection if config.trace_real_calls
     end
 
     # Run post-suite checks
     def eat
+      @stored_real_calls = tracer.stop if config.trace_real_calls
+
+      offenses = []
+
+      if config.auto_type_check
+        perform_auto_type_check(offenses)
+      end
+
+      offenses
     end
 
     private
@@ -83,27 +111,58 @@ module MockSuey
       return unless config.type_check
 
       # Allow configuring type checher manually
-      unless config.type_checker
+      unless type_checker
         require "mock_suey/type_checks/#{config.type_check}"
         const_name = config.type_check.split("_").map(&:capitalize).join
 
-        config.type_checker = MockSuey::TypeChecks.const_get(const_name)
+        self.type_checker = MockSuey::TypeChecks.const_get(const_name)
           .new(load_dirs: config.signature_load_dirs)
 
-        logger.debug "Set up type checker: #{config.type_checker.class.name} (load_dirs: #{config.signature_load_dirs})"
+        logger.debug "Set up type checker: #{type_checker.class.name} (load_dirs: #{config.signature_load_dirs})"
       end
 
       raise_on_missing = config.raise_on_missing_types
 
       on_mocked_call do |call_obj|
-        config.type_checker.typecheck!(call_obj, raise_on_missing:)
+        type_checker.typecheck!(call_obj, raise_on_missing:)
       end
     end
 
     def setup_mocked_calls_collection
-      @store_mocked_calls = []
+      logger.debug "Collect mocked calls (MockSuey.stored_mocked_calls)"
 
-      on_mocked_call { @store_mocked_calls << _1 }
+      @stored_mocked_calls = []
+
+      on_mocked_call { @stored_mocked_calls << _1 }
+    end
+
+    def setup_real_calls_collection
+      logger.debug "Collect real calls via #{config.trace_real_calls_via} (MockSuey.stored_real_calls)"
+
+      @tracer = Tracer.new(via: config.trace_real_calls_via)
+
+      MockSuey::RSpec::MockContext.registry.each do |klass, methods|
+        tracer.collect(klass, methods.keys)
+      end
+
+      tracer.start!
+    end
+
+    def perform_auto_type_check(offenses)
+      raise "No type checker configured" unless type_checker
+
+      # Generate signatures
+      type_checker.load_signatures_from_calls(stored_real_calls)
+
+      # Verify stored mocked calls
+      raise_on_missing = config.raise_on_missing_auto_types
+
+      stored_mocked_calls.each do |call_obj|
+        type_checker.typecheck!(call_obj, raise_on_missing:)
+      rescue RBS::Test::Tester::TypeError, TypeChecks::MissingSignature => err
+        call_obj.metadata[:error] = err
+        offenses << call_obj
+      end
     end
   end
 end

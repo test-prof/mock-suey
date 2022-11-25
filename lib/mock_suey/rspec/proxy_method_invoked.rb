@@ -8,19 +8,31 @@ rescue LoadError
 end
 
 require "mock_suey/ext/rspec"
+require "mock_suey/ext/instance_class"
 
 module MockSuey
   module RSpec
     using Ext::RSpec
+    using Ext::InstanceClass
 
     module ProxyMethodInvokedHook
       def proxy_method_invoked(obj, *args, &block)
         return super if obj.is_a?(::RSpec::Mocks::TestDouble) && !obj.is_a?(::RSpec::Mocks::VerifyingDouble)
 
+        receiver_class = @proxy.target_class
+        method_name = @method_name
+
+        # TODO: Make conversion customizable to support .perform_later -> #perform
+        # and other similar use-cases
+        if method_name == :new && receiver_class.singleton_class?
+          receiver_class, method_name = receiver_class.instance_class, :initialize
+        end
+
         method_call = MockSuey::MethodCall.new(
-          receiver_class: @proxy.target_class,
-          method_name: @method_name,
-          arguments: args
+          receiver_class:,
+          method_name:,
+          arguments: args,
+          metadata: {example: ::RSpec.current_example}
         )
 
         super.tap do |ret|
