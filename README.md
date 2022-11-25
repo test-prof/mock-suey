@@ -180,11 +180,95 @@ Currently, this feature only works if both real objects and mock objects calls a
 
 ## Mock contracts verification
 
-TBD
+Types drastically increase mocks/stubs stability (or consistency), but even they do not guarantee that mocks behave the same way as real objects. For example, if your method returns completely different results depending on the values (not types) of the input.
+
+The only way to provide ~100% confidence to mocks is enforcing a contract. One way to enforce mock contracts is to require having a unit/functional tests where a real object receives the same input and returns the same result as the mock. For example, consider the following tests:
+
+```ruby
+describe Accountant do
+  let(:calculator) { instance_double("TaxCalculator") }
+
+  # Declaring a mock == declaring a contract (input/output correspondance)
+  before do
+    allow(calculator).to receive(:tax_for_income).with(2020).and_return(202)
+    allow(calculator).to receive(:tax_for_income).with(0).and_return(0)
+  end
+
+  subject { described_class.new(calculator) }
+
+  specify "#after_taxes" do
+    # Assuming the #after_taxes method calls calculator.tax_for_income
+    expect(subject.after_taxes(2020)).to eq(1818)
+    expect(subject.after_taxes(0)).to be_nil
+  end
+end
+
+describe TaxCalculator do
+  subject { described_class.new }
+
+  # Adding a unit-test using the same input
+  # verifies the contract
+  specify "#tax_for_income" do
+    expect(subject.tax_for_income(2020)).to eq(202)
+    expect(subject.tax_for_income(0)).to eq(0)
+  end
+end
+```
+
+We need a way to enforce mock contract verification. In other words, if the dependency behaviour changes and the corresponding unit-test reflects this change, our mock should be marked as invalid and result into a test suit failure.
+
+One way to do this is to introduce explicit contract verification (via custom mocking mechanisms or DSL or whatever, see [bogus][] or [compact][], for example).
+
+Mock Suey chooses another way: automatically infer mock contracts (via mock contexts) and verify them by collecting real object calls during the test run. You can enable this feature via the following configuration options:
+
+```ruby
+MockSuey.configure do |config|
+  config.verify_mock_contracts = true
+  # Choose the real objects tracing method
+  config.trace_real_calls_via = :prepend # or :trace_point
+end
+```
+
+Each method stub represents a contract. For example:
+
+```ruby
+allow(calculator).to receive(:tax_for_income).with(2020).and_return(202)
+allow(calculator).to receive(:tax_for_income).with(0).and_return(0)
+
+#=> TaxCalculator#tax_for_income: (2020) -> Integer
+#=> TaxCalculator#tax_for_income: (0) -> Integer
+```
+
+If the method behaviours changes, running tests would result in a failure if mock doesn't reflect the change:
+
+```ruby
+# Assuming we decided to return nil for non-positive integers
+specify "#tax_for_income" do
+  expect(subject.tax_for_income(0)).to be_nil
+end
+```
+
+The test suite will fail with the following exception:
+
+```sh
+$ rspec accountant_spec.rb
+
+........
+
+1) Mock contract verification failed:
+   No matching call found for:
+     TaxCalculator#tax_for_income: (0) -> Integer
+   Captured calls:
+     (0) -> NilClass
+```
+
+The contract describes which explicit input values result in a particular output type (not value). Such verification can help to verify boundary conditions (e.g., when some inputs result in nil results or exceptions).
 
 ### Limitations
 
-Similarly to auto-type checks, this feature does not yet support parallel tests execution.
+1. Currently, verification takes into account only primitive values (String, Number, Booleans, plain Ruby hashes and arrays, etc.). Custom classes are not yet supported.
+
+2. Similarly to auto-type checks, this feature does not yet support parallel tests execution.
 
 ## Tracking stubbed method calls
 
@@ -266,6 +350,7 @@ I'm interested in the following contributions/discussions:
 - Minitest support
 - Advanced mock contracts (custom rules, custom classes support, etc.)
 - Methods delegation (e.g., `.perform_asyn -> #perform`)
+- Exceptions support in contracts verifications
 
 ## Contributing
 
@@ -282,3 +367,5 @@ The gem is available as open source under the terms of the [MIT License](http://
 [the-talk]: https://evilmartians.com/events/weaving-and-seaming-mocks
 [rbs]: https://github.com/ruby/rbs
 [fixturama]: https://github.com/nepalez/fixturama
+[bogus]: https://github.com/psyho/bogus
+[compact]: https://github.com/robwold/compact

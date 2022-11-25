@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "set"
+
 module MockSuey
   module RSpec
     module_function

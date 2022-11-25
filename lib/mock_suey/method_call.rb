@@ -3,7 +3,7 @@
 require "mock_suey/ext/instance_class"
 
 module MockSuey
-  using MockSuey::Ext::InstanceClass
+  using Ext::InstanceClass
 
   class MethodCall < Struct.new(
     :receiver_class,

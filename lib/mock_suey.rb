@@ -6,6 +6,7 @@ require "mock_suey/version"
 require "mock_suey/method_call"
 require "mock_suey/type_checks"
 require "mock_suey/tracer"
+require "mock_suey/mock_contract"
 
 module MockSuey
   class Configuration
@@ -22,7 +23,7 @@ module MockSuey
       :trace_real_calls_via
 
     attr_writer :logger
-    attr_reader :type_check, :auto_type_check
+    attr_reader :type_check, :auto_type_check, :verify_mock_contracts
 
     def initialize
       @debug = %w[1 y yes true t].include?(ENV["MOCK_SUEY_DEBUG"])
@@ -59,6 +60,15 @@ module MockSuey
         @auto_type_check = true
       else
         @auto_type_check = val
+      end
+    end
+
+    def verify_mock_contracts=(val)
+      if val
+        @trace_real_calls = true
+        @verify_mock_contracts = true
+      else
+        @verify_mock_contracts = val
       end
     end
   end
@@ -100,6 +110,10 @@ module MockSuey
 
       if config.auto_type_check
         perform_auto_type_check(offenses)
+      end
+
+      if config.verify_mock_contracts
+        perform_contracts_verification(offenses)
       end
 
       offenses
@@ -154,6 +168,8 @@ module MockSuey
       # Generate signatures
       type_checker.load_signatures_from_calls(stored_real_calls)
 
+      logger.info "Type check mocked calls against auto-generated signatures"
+
       # Verify stored mocked calls
       raise_on_missing = config.raise_on_missing_auto_types
 
@@ -162,6 +178,23 @@ module MockSuey
       rescue RBS::Test::Tester::TypeError, TypeChecks::MissingSignature => err
         call_obj.metadata[:error] = err
         offenses << call_obj
+      end
+    end
+
+    def perform_contracts_verification(offenses)
+      logger.info "Verify mock contracts"
+      real_calls_per_class_method = stored_real_calls.group_by(&:receiver_class).tap do |grouped|
+        grouped.transform_values! { _1.group_by(&:method_name) }
+      end
+
+      MockSuey::RSpec::MockContext.registry.each do |klass, methods|
+        methods.values.flatten.each do |stub_call|
+          contract = MockContract.from_stub(stub_call)
+          contract.verify!(real_calls_per_class_method.dig(klass, stub_call.method_name))
+        rescue MockContract::Error => err
+          stub_call.metadata[:error] = err
+          offenses << stub_call
+        end
       end
     end
   end
