@@ -352,7 +352,7 @@ I'm interested in the following contributions/discussions:
 - Sorbet support
 - Minitest support
 - Advanced mock contracts (custom rules, custom classes support, etc.)
-- Methods delegation (e.g., `.perform_asyn -> #perform`)
+- Methods delegation (e.g., `.perform_async -> #perform`, `.call -> #call`)
 - Exceptions support in contracts verification
 
 ## Contributing
