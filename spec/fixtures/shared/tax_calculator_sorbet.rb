@@ -10,4 +10,8 @@ class TaxCalculatorSorbet < TaxCalculator
   def simple_test(val)
     val
   end
+
+  def simple_test_no_sig(val)
+    val
+  end
 end

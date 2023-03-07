@@ -23,6 +23,11 @@ module MockSuey
         unbound_original_method = call_obj.receiver_class.instance_method(method_name)
         original_method_sig = T::Private::Methods.signature_for_method(unbound_original_method)
 
+        unless original_method_sig
+          raise MissingSignature, "No signature found for #{call_obj.method_desc}" if raise_on_missing
+          return
+        end
+
         T::Private::Methods::CallValidation.validate_call(
           mocked_instance,
           unbound_mocked_method,

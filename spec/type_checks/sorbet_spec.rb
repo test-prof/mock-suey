@@ -13,6 +13,36 @@ describe MockSuey::TypeChecks::Sorbet do
       described_class.new
     end
 
+    describe "type check without signatures" do
+      def create_mcall(target)
+        mcall = MockSuey::MethodCall.new(
+          receiver_class: TaxCalculatorSorbet,
+          method_name: :simple_test_no_sig,
+          arguments: [120],
+          return_value: 120,
+          mocked_instance: target
+        )
+      end
+
+      it "when raise_on_missing false" do
+        allow(target).to receive(:simple_test_no_sig).and_return(120)
+        mcall = create_mcall(target)
+
+        expect do
+          checker.typecheck!(mcall)
+        end.not_to raise_error
+      end
+
+      it "when raise_on_missing true" do
+        allow(target).to receive(:simple_test_no_sig).and_return(120)
+        mcall = create_mcall(target)
+
+        expect do
+          checker.typecheck!(mcall, raise_on_missing: true)
+        end.to raise_error(MockSuey::TypeChecks::MissingSignature)
+      end
+    end
+
     describe "type check argument type" do
       it "when correct" do
         allow(target).to receive(:simple_test).and_return(120)
