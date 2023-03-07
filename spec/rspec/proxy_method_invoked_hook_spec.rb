@@ -37,7 +37,8 @@ describe "#proxy_method_invoked" do
       receiver_class: TestHash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_instance: target
     )
   end
 
@@ -52,7 +53,8 @@ describe "#proxy_method_invoked" do
       receiver_class: TestHash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_instance: target
     )
   end
 
@@ -67,7 +69,8 @@ describe "#proxy_method_invoked" do
       receiver_class: Hash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_instance: target
     )
   end
 
@@ -82,7 +85,8 @@ describe "#proxy_method_invoked" do
       receiver_class: Hash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_instance: target
     )
   end
 
@@ -95,7 +99,8 @@ describe "#proxy_method_invoked" do
       receiver_class: TestRegexp.singleton_class,
       method_name: :escape,
       arguments: ["foo"],
-      return_value: "bar"
+      return_value: "bar",
+      mocked_instance: TestRegexp
     )
   end
 
@@ -111,13 +116,15 @@ describe "#proxy_method_invoked" do
     expect(mcalls.first).to have_attributes(
       receiver_class: TestHash,
       method_name: :initialize,
-      arguments: []
+      arguments: [],
+      mocked_instance: TestHash
     )
     expect(mcalls.last).to have_attributes(
       receiver_class: TestHash,
       method_name: :[],
       arguments: ["a"],
-      return_value: 10
+      return_value: 10,
+      mocked_instance: hash_double
     )
   end
 end

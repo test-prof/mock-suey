@@ -29,6 +29,7 @@ module MockSuey
         end
 
         method_call = MockSuey::MethodCall.new(
+          mocked_instance: obj,
           receiver_class:,
           method_name:,
           arguments: args,

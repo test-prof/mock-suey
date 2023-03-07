@@ -12,6 +12,7 @@ module MockSuey
     :return_value,
     :has_kwargs,
     :metadata,
+    :mocked_instance,
     keyword_init: true
   )
     def initialize(**)
