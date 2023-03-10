@@ -14,6 +14,7 @@ A collection of tools to keep mocks in line with real objects.
 - [Installation](#installation)
 - [Typed doubles](#typed-doubles)
   - [Using with RBS](#using-with-rbs)
+  - [Using with Sorbet](#using-with-sorbet)
   - [Typed doubles limitations](#typed-doubles-limitations)
 - [Mock context](#mock-context)
 - [Auto-generated type signatures and post-run checks](#auto-generated-type-signatures-and-post-run-checks)
@@ -83,6 +84,33 @@ Typed doubles rely on the type signatures being defined. What if you don't have 
 1) Adding type signatures only for the objects being mocked. You don't even need to type check your code or cover it with types. Instead, you can rely on runtime checks made in tests for real objects and use typed doubles for mocked objects.
 
 2) Auto-generating types on-the-fly from the real call traces (see below).
+
+### Using with Sorbet
+
+To use MockSuey with Sorbet, configure it as follows:
+
+```ruby
+MockSuey.configure do |config|
+  config.type_check = :sorbet
+end
+```
+
+Make sure that `sorbet` and `sorbet-runtime` gem are present in the bundle according to the [sorbet instruction](https://sorbet.org/docs/adopting#step-1-install-dependencies).
+That's it! Now all mocked methods are type-checked.
+
+### raise_on_missing_types
+
+Gem `sorbet-runtime` does not load signatures for stdlib types (Integer, String, etc...) into runtime.
+Checking types for Integer, String, etc is only available through `rbs typecheck` command which uses [custom ruby binary](https://github.com/sorbet/sorbet/blob/master/docs/running-compiled-code.md).
+
+Therefore, you should consider changing `raise_on_missing_types` to `false` if you use Sorbet.
+
+```ruby
+MockSuey.configure do |config|
+  config.type_check = :sorbet
+  config.raise_on_missing_types = false
+end
+```
 
 ## Mock context
 
@@ -371,6 +399,7 @@ The gem is available as open source under the terms of the [MIT License](http://
 
 [the-talk]: https://evilmartians.com/events/weaving-and-seaming-mocks
 [rbs]: https://github.com/ruby/rbs
+[sorbet]: https://github.com/sorbet/sorbet
 [fixturama]: https://github.com/nepalez/fixturama
 [bogus]: https://github.com/psyho/bogus
 [compact]: https://github.com/robwold/compact

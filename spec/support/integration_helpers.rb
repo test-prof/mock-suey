@@ -10,14 +10,15 @@ module IntegrationHelpers
     "bundle exec ruby"
   end
 
-  RSPEC_STUB = File.join(__dir__, "../../bin/rspec")
+  ROOT_DIR = File.expand_path(".")
+  RSPEC_STUB = File.join(ROOT_DIR, "bin/rspec")
 
   def run_rspec(path, chdir: nil, success: true, env: {}, options: "")
-    command = "#{RUBY_RUNNER} #{RSPEC_STUB} #{options} #{path}_fixture.rb"
+    command = "#{RUBY_RUNNER} #{RSPEC_STUB} #{options} spec/fixtures/rspec/#{path}_fixture.rb"
     output, err, status = Open3.capture3(
       env,
       command,
-      chdir: chdir || File.expand_path("../../fixtures/rspec", __FILE__)
+      chdir: ROOT_DIR
     )
 
     if ENV["DEBUG"] == "1"
