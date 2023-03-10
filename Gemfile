@@ -8,7 +8,6 @@ gem "rspec"
 gem 'sorbet', require: false
 gem 'sorbet-runtime', require: false
 gem 'tapioca', require: false
-gem 'pry'
 
 gemspec
 
