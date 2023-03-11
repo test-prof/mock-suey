@@ -45,6 +45,15 @@ class TaxCalculatorSorbet < TaxCalculator
   def simple_test_no_sig(val)
     val
   end
+
+  class << self
+    extend T::Sig
+
+    sig { params(val: Integer).returns(Integer) }
+    def self.singleton_test(val)
+      val
+    end
+  end
 end
 
 class AccountantSorbet < Accountant

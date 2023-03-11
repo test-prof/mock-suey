@@ -48,15 +48,7 @@ module MockSuey
       end
 
       def get_unbound_mocked_method(method_call)
-        method_name = method_call.method_name
-        mocked_obj = method_call.mocked_obj
-
-        is_singleton = method_call.receiver_class.singleton_class?
-        if is_singleton
-          mocked_obj.instance_method(method_name)
-        else
-          mocked_obj.method(method_name).unbind
-        end
+        method_call.mocked_obj.method(method_call.method_name).unbind
       end
 
       def get_original_method_sig(method_call)

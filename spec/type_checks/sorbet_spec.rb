@@ -58,6 +58,40 @@ describe MockSuey::TypeChecks::Sorbet do
     end
 
     describe "type check argument type" do
+      describe "check for singleton classes" do
+        let(:sc) { TaxCalculatorSorbet.singleton_class }
+
+        it "type-checks singleton classes" do
+          mcall = MockSuey::MethodCall.new(
+            receiver_class: sc,
+            method_name: :singleton_test,
+            arguments: [1],
+            return_value: 333,
+            mocked_obj: sc
+          )
+
+          expect do
+            checker.typecheck!(mcall)
+          end.not_to raise_error
+        end
+
+        it "type-checks mocked singleton classes" do
+          allow(sc).to receive(:singleton_test).and_return("incorrect")
+
+          mcall = MockSuey::MethodCall.new(
+            receiver_class: sc,
+            method_name: :singleton_test,
+            arguments: [1],
+            return_value: sc.singleton_test(1),
+            mocked_obj: sc
+          )
+
+          expect do
+            checker.typecheck!(mcall)
+          end.to raise_error(TypeError, /Return value.*Expected.*Integer.*got.*String/)
+        end
+      end
+
       describe "for mocked instance methods" do
         it "when correct" do
           allow(target).to receive(:simple_test).and_return(333)
