@@ -286,12 +286,29 @@ describe MockSuey::TypeChecks::Sorbet do
             receiver_class: TaxCalculatorSorbet,
             method_name: :simple_test_no_runtime,
             arguments: [120],
-            mocked_obj: target
+            mocked_obj: target,
+            return_value: "incorrect"
           )
 
           expect do
             checker.typecheck!(mcall)
           end.not_to raise_error
+        end
+
+        it "raises error when added on_failure()" do
+          allow(target).to receive(:simple_test_log_on_error).and_return("incorrect")
+
+          mcall = MockSuey::MethodCall.new(
+            receiver_class: TaxCalculatorSorbet,
+            method_name: :simple_test_log_on_error,
+            arguments: [120],
+            mocked_obj: target,
+            return_value: "incorrect"
+          )
+
+          expect do
+            checker.typecheck!(mcall)
+          end.to raise_error(TypeError)
         end
       end
 

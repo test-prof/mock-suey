@@ -51,6 +51,11 @@ class TaxCalculatorSorbet < TaxCalculator
     val
   end
 
+  sig { params(val: Integer).returns(Integer).on_failure(:log) }
+  def simple_test_log_on_error(val)
+    val
+  end
+
   class << self
     extend T::Sig
 
