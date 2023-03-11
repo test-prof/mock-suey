@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-gem "sorbet-runtime"
+gem "sorbet-runtime", "~> 0.5"
 require "sorbet-runtime"
 require "set"
 require "pathname"
