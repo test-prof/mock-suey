@@ -46,6 +46,11 @@ class TaxCalculatorSorbet < TaxCalculator
     val
   end
 
+  T::Sig::WithoutRuntime.sig { params(val: Integer).returns(Integer) }
+  def simple_test_no_runtime(val)
+    val
+  end
+
   class << self
     extend T::Sig
 

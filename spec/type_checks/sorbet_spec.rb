@@ -278,6 +278,21 @@ describe MockSuey::TypeChecks::Sorbet do
 
           expect { checker.typecheck!(mcall) }.not_to raise_error
         end
+
+        it "does not raise type error when without runtime" do
+          allow(target).to receive(:simple_test_no_runtime).and_return("incorrect")
+
+          mcall = MockSuey::MethodCall.new(
+            receiver_class: TaxCalculatorSorbet,
+            method_name: :simple_test_no_runtime,
+            arguments: [120],
+            mocked_obj: target
+          )
+
+          expect do
+            checker.typecheck!(mcall)
+          end.not_to raise_error
+        end
       end
 
       describe "for mocked class methods" do
