@@ -36,7 +36,7 @@ module MockSuey
         else
           method_call.receiver_class.instance_method(method_name)
         end
-        original_method_sig = T::Private::Methods.signature_for_method(unbound_original_method)
+        original_method_sig = T::Utils.signature_for_method(unbound_original_method)
 
         unless original_method_sig
           raise MissingSignature, RAISE_ON_MISSING_MESSAGE if raise_on_missing
