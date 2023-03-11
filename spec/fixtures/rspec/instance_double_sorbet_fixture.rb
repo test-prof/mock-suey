@@ -18,6 +18,13 @@ describe AccountantSorbet do
   }
   let!(:accountant) { AccountantSorbet.new(tax_calculator: tax_calculator) }
 
+  it "sorbet_rspec" do
+    unrelated_double = instance_double("Array")
+    expect do
+      described_class.new(tax_calculator: unrelated_double)
+    end.to raise_error(TypeError, /.*Expected type TaxCalculator, got type RSpec::Mocks::InstanceVerifyingDouble.*/)
+  end
+
   it "#net_pay" do
     expect(subject.net_pay(89)).to eq 47
   end

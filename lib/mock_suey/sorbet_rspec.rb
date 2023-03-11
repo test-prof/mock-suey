@@ -20,5 +20,5 @@ T::Configuration.call_validation_error_handler = lambda do |signature, opts|
   are_related = doubled_class <= opts[:type].raw_type
   return if are_related
 
-  T::Configuration.call_validation_error_handler_default(signature, opts)
+  return T::Configuration.send(:call_validation_error_handler_default, signature, opts)
 end

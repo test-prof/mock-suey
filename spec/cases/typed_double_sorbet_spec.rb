@@ -17,7 +17,7 @@ describe "Typed double extension" do
           status, output = run_rspec("instance_double_sorbet", env: env)
 
           expect(status).not_to be_success
-          expect(output).to include("5 examples, 3 failures")
+          expect(output).to include("6 examples, 3 failures")
           expect(output).to include("AccountantSorbet #tax_rate_for")
           expect(output).to include("AccountantSorbet #net_pay")
           expect(output).to include("AccountantSorbet#tax_for negative amount")
