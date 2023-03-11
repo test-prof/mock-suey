@@ -98,7 +98,8 @@ describe MockSuey::TypeChecks::Sorbet do
             method_name: :simple_block,
             arguments: [123],
             mocked_obj: target,
-            block: block
+            block: block,
+            return_value: "333"
           )
 
           expect(checker.typecheck!(mcall)).to eq("333")
@@ -191,7 +192,8 @@ describe MockSuey::TypeChecks::Sorbet do
             receiver_class: TaxCalculatorSorbet,
             method_name: :simple_test,
             arguments: [120],
-            mocked_obj: target
+            mocked_obj: target,
+            return_value: 333
           )
 
           expect(checker.typecheck!(mcall)).to eq(333)
@@ -252,7 +254,8 @@ describe MockSuey::TypeChecks::Sorbet do
             receiver_class: TaxCalculatorSorbet,
             method_name: :class_method_test,
             arguments: [120],
-            mocked_obj: TaxCalculatorSorbet
+            mocked_obj: TaxCalculatorSorbet,
+            return_value: 333
           )
 
           expect(checker.typecheck!(mcall)).to eq(333)

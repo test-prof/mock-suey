@@ -6,7 +6,7 @@ require_relative "./tax_calculator"
 class TaxCalculatorSorbet < TaxCalculator
   extend T::Sig
 
-  sig { params(val: Integer).returns(Result) }
+  sig { params(val: Integer).returns(T.nilable(Result)) }
   def for_income(val)
     return if val < 0
 
@@ -59,6 +59,7 @@ class AccountantSorbet < Accountant
 
   sig { params(val: Integer).returns(Integer) }
   def net_pay(val)
+    # intentionally incorrect
     val - tax_calculator.for_income(val)
   end
 
@@ -67,7 +68,7 @@ class AccountantSorbet < Accountant
     tax_calculator.for_income(val).result
   end
 
-  sig { params(value: Integer).returns(Integer) }
+  sig { params(value: Integer).returns(Float) }
   def tax_rate_for(value)
     tax_calculator.tax_rate_for(value:)
   end

@@ -4,12 +4,12 @@ $LOAD_PATH.unshift File.expand_path("../../../../lib", __FILE__)
 
 require_relative "./spec_helper"
 require_relative "../shared/tax_calculator_sorbet"
-require_relative "tax_calculator_spec"
+require_relative "tax_calculator_sorbet_spec"
 
 describe AccountantSorbet do
   before do
     allow(tax_calculator).to receive(:for_income).and_return(42)
-    allow(tax_calculator).to receive(:tax_rate_for).and_return(10)
+    allow(tax_calculator).to receive(:tax_rate_for).and_return(10.0)
     allow(tax_calculator).to receive(:for_income).with(-10).and_return(TaxCalculator::Result.new(0))
   end
 
