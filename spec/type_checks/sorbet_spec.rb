@@ -53,7 +53,7 @@ describe MockSuey::TypeChecks::Sorbet do
 
         expect do
           checker.typecheck!(mcall, raise_on_missing: true)
-        end.to raise_error(MockSuey::TypeChecks::MissingSignature)
+        end.to raise_error(MockSuey::TypeChecks::MissingSignature, /.*set raise_on_missing_types to false.*/)
       end
     end
 
