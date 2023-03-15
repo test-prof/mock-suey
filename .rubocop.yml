@@ -4,6 +4,9 @@ require:
 inherit_gem:
   standard: config/base.yml
 
+inherit_from:
+  - .rubocop/rubocop_rspec.yml
+
 AllCops:
   Exclude:
     - 'bin/*'
@@ -16,6 +19,7 @@ AllCops:
     - '.github/**/*'
   DisplayCopNames: true
   SuggestExtensions: false
+  NewCops: disable
   TargetRubyVersion: 3.1
 
 Standard/BlockSingleLineBraces:

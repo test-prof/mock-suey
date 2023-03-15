@@ -58,6 +58,8 @@ To enable typed verified doubles, you must explicitly configure a type checker.
 
 ### Using with RBS
 
+**NOTE:** RBS 3.0+ is not supported yet. We're working on it.
+
 To use MockSuey with RBS, configure it as follows:
 
 ```ruby

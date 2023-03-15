@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 gem "debug", platform: :mri
-gem "rbs"
+gem "rbs", "< 3.0"
 gem "rspec"
 
 gemspec
