@@ -44,7 +44,7 @@ Consider an example:
 let(:array_double) { instance_double("Array") }
 
 specify "#take" do
-  allow(array_double).to receve(:take).and_return([1, 2, 3])
+  allow(array_double).to receive(:take).and_return([1, 2, 3])
 
   expect(array_double.take("three")).to eq([1, 2, 3])
 end
