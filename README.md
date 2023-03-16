@@ -87,7 +87,7 @@ Typed doubles rely on the type signatures being defined. What if you don't have 
 
 ### Using with Sorbet
 
-To use MockSuey with Sorbet, configure it as follows:
+To use Mock Suey with Sorbet, configure it as follows:
 
 ```ruby
 MockSuey.configure do |config|
