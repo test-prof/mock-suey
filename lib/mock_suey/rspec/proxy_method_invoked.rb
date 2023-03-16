@@ -33,7 +33,7 @@ module MockSuey
           receiver_class:,
           method_name:,
           arguments: args,
-          block: block,
+          block:,
           metadata: {example: ::RSpec.current_example}
         )
 
