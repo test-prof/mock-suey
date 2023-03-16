@@ -38,6 +38,7 @@ describe AccountantSorbet do
   describe "#net_pay" do
     describe "without mocks" do
       let(:tax_calculator) { TaxCalculatorSorbet.new }
+
       it "raises ruby error because the method is intentionally written incorrectly" do
         expect { accountant.net_pay(10) }.to raise_error(TypeError, "TaxCalculator::Result can't be coerced into Integer")
         expect { accountant.net_pay(10) }.not_to raise_error # intentionaly
@@ -50,15 +51,19 @@ describe AccountantSorbet do
         allow(target).to receive(:for_income).and_return(return_result)
         target
       end
+
       describe "with incorrect return" do
         let(:return_result) { Array }
+
         it "raises error because the method is intentionally written incorrectly" do
           expect { accountant.net_pay(10) }.to raise_error(TypeError)
           expect { accountant.net_pay(10) }.not_to raise_error # intentionaly
         end
       end
+
       describe "with correct return" do
         let!(:return_result) { TaxCalculator::Result.new(3, 33) }
+
         it "raises error because the method is intentionally written incorrectly" do
           expect { accountant.net_pay(10) }.to raise_error(TypeError)
           expect { accountant.net_pay(10) }.not_to raise_error # intentionaly
@@ -70,6 +75,7 @@ describe AccountantSorbet do
   describe "#tax_rate_for" do
     describe "without mocks" do
       let(:tax_calculator) { TaxCalculatorSorbet.new }
+
       it "succeeds" do
         expect { accountant.tax_rate_for(10) }.not_to raise_error
       end
@@ -81,15 +87,19 @@ describe AccountantSorbet do
         allow(target).to receive(:tax_rate_for).and_return(return_result)
         target
       end
+
       describe "with incorrect return" do
         let(:return_result) { "incorrect" }
+
         it "fails with TypeError" do
           expect { accountant.tax_rate_for(10) }.to raise_error(TypeError, /.*Return value.*Expected type Float, got type String.*/)
           expect { accountant.tax_rate_for(10) }.not_to raise_error # intentionaly
         end
       end
+
       describe "with correct return" do
         let(:return_result) { 0.333 }
+
         it "returns correct result" do
           expect(accountant.tax_rate_for(10)).to eq(0.333)
         end
@@ -100,6 +110,7 @@ describe AccountantSorbet do
   describe "#tax_for" do
     describe "without mocks" do
       let(:tax_calculator) { TaxCalculatorSorbet.new }
+
       it "succeeds" do
         expect { accountant.tax_for(10) }.not_to raise_error
       end
@@ -111,15 +122,19 @@ describe AccountantSorbet do
         allow(target).to receive(:tax_rate_for).and_return(return_result)
         target
       end
+
       describe "with incorrect return" do
         let(:return_result) { Array }
+
         it "fails with NoMethodError because tax_rate_for does not have signature" do
           expect { accountant.tax_for(10) }.to raise_error(NoMethodError)
           expect { accountant.tax_for(10) }.not_to raise_error # intentionaly
         end
       end
+
       describe "with correct return" do
         let(:return_result) { 0.333 }
+
         it "returns correct result" do
           expect(accountant.tax_for(10)).to eq(3)
         end
