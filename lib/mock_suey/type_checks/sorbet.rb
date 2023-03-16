@@ -5,7 +5,7 @@ require "sorbet-runtime"
 require "set"
 require "pathname"
 
-require_relative "../sorbet_rspec"
+require "mock_suey/sorbet_rspec"
 require "mock_suey/ext/instance_class"
 
 module MockSuey
