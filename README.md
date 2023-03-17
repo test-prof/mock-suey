@@ -100,10 +100,16 @@ That's it! Now all mocked methods are type-checked.
 
 ### raise_on_missing_types
 
-Gem `sorbet-runtime` does not load signatures for stdlib types (Integer, String, etc...) into runtime.
-Checking types for Integer, String, etc is only available through `rbs typecheck` command which uses [custom ruby binary](https://github.com/sorbet/sorbet/blob/master/docs/running-compiled-code.md).
+If a signature is described in a `.rb` file, it will be used by `sorbet-runtime` and type checking will be available.
+One of the gems that is using sorbet signatures is [ShopifyAPI](https://github.com/Shopify/shopify-api-ruby/blob/main/lib/shopify_api/auth.rb) for example.
 
-Therefore, you should consider changing `raise_on_missing_types` to `false` if you use Sorbet.
+However, many signatures are declared inside `.rbi` files, like 1) signatures for [stdlib and core types](https://github.com/sorbet/sorbet/tree/master/rbi/core) and 2) signatures for most libraries including [rails](https://github.com/chanzuckerberg/sorbet-rails/blob/master/sorbet/rbi/sorbet-typed/lib/activerecord/all/activerecord.rbi).
+Unfortunately, these types cannot be loaded into runtime at the moment.
+It's not possible to type check their mocks yet.
+
+Checking types defined in .rbi files is only available through `rbs typecheck` command which uses [custom ruby binary](https://github.com/sorbet/sorbet/blob/master/docs/running-compiled-code.md).
+
+You should consider changing `raise_on_missing_types` to `false` if you use Sorbet.
 
 ```ruby
 MockSuey.configure do |config|
