@@ -15,6 +15,8 @@ module IntegrationHelpers
 
   def run_rspec(path, chdir: nil, success: true, env: {}, options: "")
     command = "#{RUBY_RUNNER} #{RSPEC_STUB} #{options} spec/fixtures/rspec/#{path}_fixture.rb"
+    env = env.dup
+    env["CI"] = ENV["CI"]
     output, err, status = Open3.capture3(
       env,
       command,

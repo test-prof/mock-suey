@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "mock_suey/type_checks/ruby"
 $LOAD_PATH.unshift File.expand_path("../../../../lib", __FILE__)
 
 require_relative "./spec_helper"
