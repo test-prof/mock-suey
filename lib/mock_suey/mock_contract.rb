@@ -19,7 +19,7 @@ module MockSuey
       def captured_calls_message(calls)
         calls.map do |call|
           contract.args_pattern.map.with_index do |arg, i|
-            (ANYTHING == arg) ? "_" : call.arguments[i].inspect
+            (arg == ANYTHING) ? "_" : call.arguments[i].inspect
           end.join(", ").then do |args_desc|
             "    (#{args_desc}) -> #{call.return_value.class}"
           end
