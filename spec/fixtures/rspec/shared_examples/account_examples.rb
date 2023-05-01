@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-shared_examples "accountant" do
-  subject { Accountant.new(tax_calculator: tax_calculator) }
+shared_examples "accountant" do |class_name = Accountant|
+  subject { class_name.new(tax_calculator: tax_calculator) }
 
   it "#net_pay" do
     expect(subject.net_pay(89)).to eq 47

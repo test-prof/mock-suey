@@ -14,6 +14,7 @@ A collection of tools to keep mocks in line with real objects.
 - [Installation](#installation)
 - [Typed doubles](#typed-doubles)
   - [Using with RBS](#using-with-rbs)
+  - [Using with Sorbet](#using-with-sorbet)
   - [Typed doubles limitations](#typed-doubles-limitations)
 - [Mock context](#mock-context)
 - [Auto-generated type signatures and post-run checks](#auto-generated-type-signatures-and-post-run-checks)
@@ -83,6 +84,39 @@ Typed doubles rely on the type signatures being defined. What if you don't have 
 1) Adding type signatures only for the objects being mocked. You don't even need to type check your code or cover it with types. Instead, you can rely on runtime checks made in tests for real objects and use typed doubles for mocked objects.
 
 2) Auto-generating types on-the-fly from the real call traces (see below).
+
+### Using with Sorbet
+
+To use Mock Suey with Sorbet, configure it as follows:
+
+```ruby
+MockSuey.configure do |config|
+  config.type_check = :sorbet
+end
+```
+
+Make sure that `sorbet` and `sorbet-runtime` gem are present in the bundle according to the [sorbet instruction](https://sorbet.org/docs/adopting#step-1-install-dependencies).
+That's it! Now all mocked methods are type-checked.
+
+### raise_on_missing_types
+
+If a signature is described in a `.rb` file, it will be used by `sorbet-runtime` and type checking will be available.
+One of the gems that is using sorbet signatures is [ShopifyAPI](https://github.com/Shopify/shopify-api-ruby/blob/main/lib/shopify_api/auth.rb) for example.
+
+However, many signatures are declared inside `.rbi` files, like 1) signatures for [stdlib and core types](https://github.com/sorbet/sorbet/tree/master/rbi/core) and 2) signatures for most libraries including [rails](https://github.com/chanzuckerberg/sorbet-rails/blob/master/sorbet/rbi/sorbet-typed/lib/activerecord/all/activerecord.rbi).
+Unfortunately, these types cannot be loaded into runtime at the moment.
+It's not possible to type check their mocks yet.
+
+Checking types defined in .rbi files is only available through `rbs typecheck` command which uses [custom ruby binary](https://github.com/sorbet/sorbet/blob/master/docs/running-compiled-code.md).
+
+You should consider changing `raise_on_missing_types` to `false` if you use Sorbet.
+
+```ruby
+MockSuey.configure do |config|
+  config.type_check = :sorbet
+  config.raise_on_missing_types = false
+end
+```
 
 ## Mock context
 
@@ -371,6 +405,7 @@ The gem is available as open source under the terms of the [MIT License](http://
 
 [the-talk]: https://evilmartians.com/events/weaving-and-seaming-mocks
 [rbs]: https://github.com/ruby/rbs
+[sorbet]: https://github.com/sorbet/sorbet
 [fixturama]: https://github.com/nepalez/fixturama
 [bogus]: https://github.com/psyho/bogus
 [compact]: https://github.com/robwold/compact

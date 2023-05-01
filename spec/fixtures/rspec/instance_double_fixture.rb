@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift File.expand_path("../../../../lib", __FILE__)
-
 require_relative "./spec_helper"
 require_relative "../shared/tax_calculator"
 require_relative "tax_calculator_spec"

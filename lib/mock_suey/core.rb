@@ -4,7 +4,7 @@ module MockSuey
   class Configuration
     # No freezing this const to allow third-party libraries
     # to integrate with mock_suey
-    TYPE_CHECKERS = %w[ruby]
+    TYPE_CHECKERS = %w[ruby sorbet]
 
     attr_accessor :debug,
       :logger,

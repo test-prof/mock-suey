@@ -37,7 +37,8 @@ describe "#proxy_method_invoked" do
       receiver_class: TestHash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_obj: target
     )
   end
 
@@ -52,7 +53,25 @@ describe "#proxy_method_invoked" do
       receiver_class: TestHash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_obj: target
+    )
+  end
+
+  it "#instance_double with block" do
+    target = instance_double(TestHash)
+    allow(target).to receive(:each_key).and_yield("444")
+
+    block = proc { |_| "333" }
+    expect(target.each_key { |n| n }).to eq("444")
+
+    expect(mcalls.size).to eq(1)
+    expect(mcalls.first).to have_attributes(
+      receiver_class: TestHash,
+      method_name: :each_key,
+      arguments: [],
+      mocked_obj: target,
+      block: block
     )
   end
 
@@ -67,7 +86,8 @@ describe "#proxy_method_invoked" do
       receiver_class: Hash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_obj: target
     )
   end
 
@@ -82,7 +102,8 @@ describe "#proxy_method_invoked" do
       receiver_class: Hash,
       method_name: :key?,
       arguments: ["x"],
-      return_value: true
+      return_value: true,
+      mocked_obj: target
     )
   end
 
@@ -95,7 +116,8 @@ describe "#proxy_method_invoked" do
       receiver_class: TestRegexp.singleton_class,
       method_name: :escape,
       arguments: ["foo"],
-      return_value: "bar"
+      return_value: "bar",
+      mocked_obj: TestRegexp
     )
   end
 
@@ -111,13 +133,15 @@ describe "#proxy_method_invoked" do
     expect(mcalls.first).to have_attributes(
       receiver_class: TestHash,
       method_name: :initialize,
-      arguments: []
+      arguments: [],
+      mocked_obj: TestHash
     )
     expect(mcalls.last).to have_attributes(
       receiver_class: TestHash,
       method_name: :[],
       arguments: ["a"],
-      return_value: 10
+      return_value: 10,
+      mocked_obj: hash_double
     )
   end
 end

@@ -6,6 +6,7 @@ MockSuey.configure do |config|
   config.debug = true
   config.store_mocked_calls = ENV["STORE_MOCKS"] == "true"
   config.type_check = :ruby if ENV["TYPED_DOUBLE"] == "true"
+  config.type_check = :sorbet if ENV["TYPED_SORBET"] == "true"
   config.signature_load_dirs = ENV["RBS_SIG_PATH"]
   config.auto_type_check = ENV["AUTO_TYPE_CHECK"] == "true"
   config.verify_mock_contracts = ENV["VERIFY_CONTRACTS"] == "true"

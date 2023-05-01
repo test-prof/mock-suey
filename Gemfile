@@ -5,6 +5,7 @@ source "https://rubygems.org"
 gem "debug", platform: :mri
 gem "rbs", "< 3.0"
 gem "rspec"
+gem 'sorbet-runtime', require: false
 
 gemspec
 

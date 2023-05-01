@@ -29,9 +29,11 @@ module MockSuey
         end
 
         method_call = MockSuey::MethodCall.new(
+          mocked_obj: obj,
           receiver_class:,
           method_name:,
           arguments: args,
+          block:,
           metadata: {example: ::RSpec.current_example}
         )
 
